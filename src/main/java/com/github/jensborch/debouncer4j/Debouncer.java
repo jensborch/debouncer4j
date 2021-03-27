@@ -24,7 +24,7 @@ public class Debouncer<T, R> {
     private final ScheduledExecutorService scheduler;
     private final long delay;
     private final Function<T, R> function;
-    private final Map<T, Queued<T, R>> queue;
+    private final Map<T, R> queue;
 
     public Debouncer(final String name, final Function<T, R> operation, final long delay, final ScheduledExecutorService scheduler) {
         this.name = Objects.requireNonNull(name);
@@ -35,45 +35,24 @@ public class Debouncer<T, R> {
     }
 
     public R run(final T t) {
-        Queued<T, R> q = queue.getOrDefault(t, new Queued<>(t));
-        if (q.result == null) {
-            LOG.debug("Calling {}({}) immediately", name, q);
-            q.result = function.apply(t);
-            queue(q);
+        R result = queue.get(t);
+        if (result == null) {
+            LOG.debug("Calling {}({}) immediately", name, t);
+            result = function.apply(t);
+            queue(t, result);
             remove(t, delay);
         } else {
-            LOG.debug("Returning queued result for {}({})", name, q);
+            LOG.debug("Returning queued result for {}({})", name, t);
         }
-        return q.result;
+        return result;
     }
 
     private void remove(final T t, final long delay) {
         scheduler.schedule(() -> queue.remove(t), delay, TimeUnit.MILLISECONDS);
     }
 
-    private void queue(final Queued<T, R> q) {
-        queue.put(q.t, q);
-    }
-
-    /**
-     * @param <T> type for function method parameters
-     * @param <R> type for result
-     */
-    private static class Queued<T, R> {
-
-        R result;
-        final long lastRunTime;
-        final T t;
-
-        Queued(final T t) {
-            this.t = t;
-            this.lastRunTime = System.currentTimeMillis();
-        }
-
-        @Override
-        public String toString() {
-            return t.toString();
-        }
+    private void queue(final T t, final R r) {
+        queue.put(t, r);
     }
 
 }
