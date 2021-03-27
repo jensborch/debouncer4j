@@ -7,6 +7,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -35,7 +36,7 @@ class DebouncerTest {
     @Test
     void testRun() throws Exception {
         String result = debouncer.run("test");
-        verify(scheduler, times(1)).schedule(any(Runnable.class), eq(1000L), eq(TimeUnit.MILLISECONDS));
+        verify(scheduler, times(1)).schedule(any(Callable.class), eq(1000L), eq(TimeUnit.MILLISECONDS));
         assertEquals("test result", result);
     }
 
@@ -45,20 +46,20 @@ class DebouncerTest {
         debouncer.run("test");
         debouncer.run("test");
         String result = debouncer.run("test");
-        verify(scheduler, times(1)).schedule(any(Runnable.class), eq(1000L), eq(TimeUnit.MILLISECONDS));
+        verify(scheduler, times(1)).schedule(any(Callable.class), eq(1000L), eq(TimeUnit.MILLISECONDS));
         assertEquals("test result", result);
     }
 
     @Test
     void testRunDebounced() throws Exception {
-        when(scheduler.schedule(any(Runnable.class), eq(1000L), eq(TimeUnit.MILLISECONDS))).thenAnswer(
+        when(scheduler.schedule(any(Callable.class), eq(1000L), eq(TimeUnit.MILLISECONDS))).thenAnswer(
                 invocation -> {
-                    invocation.getArgument(0, Runnable.class).run();
+                    invocation.getArgument(0, Callable.class).call();
                     return null;
                 });
         debouncer.run("test");
         String result = debouncer.run("test");
-        verify(scheduler, times(2)).schedule(any(Runnable.class), eq(1000L), eq(TimeUnit.MILLISECONDS));
+        verify(scheduler, times(2)).schedule(any(Callable.class), eq(1000L), eq(TimeUnit.MILLISECONDS));
     }
 
 }

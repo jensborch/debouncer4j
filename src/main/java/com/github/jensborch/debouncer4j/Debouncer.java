@@ -48,9 +48,7 @@ public class Debouncer<T, R> {
     }
 
     private void remove(final T t, final long delay) {
-        scheduler.schedule(() -> {
-            queue.remove(t);
-        }, delay, TimeUnit.MILLISECONDS);
+        scheduler.schedule(() -> queue.remove(t), delay, TimeUnit.MILLISECONDS);
     }
 
     private void queue(final Queued<T, R> q) {
