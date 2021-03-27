@@ -7,7 +7,7 @@ addons:
 jdk:
   - openjdk8
 script:
-  - ././mvnw verify sonar:sonar
+  - ././mvnw verify
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 cache:
