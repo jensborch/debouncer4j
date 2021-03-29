@@ -36,6 +36,8 @@
         <exclude name="ClassNamingConventions"/>
     </rule>
     <rule ref="category/java/design.xml">
+        <exclude name="SignatureDeclareThrowsException" />
+        <exclude name="AvoidCatchingGenericException" />
         <exclude name="LawOfDemeter"/>
         <exclude name="LoosePackageCoupling"/>
         <exclude name="DataClass"/>
