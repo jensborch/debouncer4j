@@ -2,6 +2,7 @@ package com.github.jensborch.debouncer4j;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -24,7 +25,7 @@ public class Debouncer<T, R> {
     private final ScheduledExecutorService scheduler;
     private final long delay;
     private final Function<T, R> function;
-    private final Map<T, R> queue;
+    private final Map<T, Optional<R>> queue;
 
     public Debouncer(final String name, final Function<T, R> operation, final long delay, final ScheduledExecutorService scheduler) {
         this.name = Objects.requireNonNull(name);
@@ -35,23 +36,23 @@ public class Debouncer<T, R> {
     }
 
     public R run(final T t) {
-        R result = queue.get(t);
+        Optional<R> result = queue.get(t);
         if (result == null) {
             LOG.debug("Calling {}({}) immediately", name, t);
-            result = function.apply(t);
+            result = Optional.ofNullable(function.apply(t));
             queue(t, result);
             remove(t, delay);
         } else {
             LOG.debug("Returning queued result for {}({})", name, t);
         }
-        return result;
+        return result.orElse(null);
     }
 
     private void remove(final T t, final long delay) {
         scheduler.schedule(() -> queue.remove(t), delay, TimeUnit.MILLISECONDS);
     }
 
-    private void queue(final T t, final R r) {
+    private void queue(final T t, final Optional<R> r) {
         queue.put(t, r);
     }
 

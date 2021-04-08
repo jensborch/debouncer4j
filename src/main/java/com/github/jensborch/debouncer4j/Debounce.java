@@ -22,7 +22,7 @@ import javax.interceptor.InterceptorBinding;
 import javax.interceptor.InvocationContext;
 
 /**
- *
+ * CDI interceptor for bebouncing method calls.
  */
 @Priority(Interceptor.Priority.APPLICATION)
 @Inherited

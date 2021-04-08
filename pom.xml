@@ -37,9 +37,9 @@
         <rs-api.version>2.0.1</rs-api.version>
         <slf4j.version>1.7.30</slf4j.version>
         <sonar-plugin.version>3.6.0.1398</sonar-plugin.version>
-        <sonar.projectKey>com.github.jensborch.debouncer4j:debouncer4j</sonar.projectKey>
-        <sonar.organization>jensborch-github</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <sonar.organization>jensborch-github</sonar.organization>
+        <sonar.projectKey>com.github.jensborch.debouncer4j:debouncer4j</sonar.projectKey>
         <sortpom.version>2.8.0</sortpom.version>
         <source-plugin.version>3.0.1</source-plugin.version>
         <spotbugs-plugin.version>4.0.4</spotbugs-plugin.version>
