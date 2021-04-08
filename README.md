@@ -4,7 +4,7 @@ Simple Java debouncer.
 
 ## Status
 
-[![Build Status](https://travis-ci.com/jensborch/debouncer4j.svg?branch=master)](https://travis-ci.com/jensborch/debouncer4j)
+[![Java CI with Maven](https://github.com/jensborch/debouncer4j/actions/workflows/maven.yml/badge.svg)](https://github.com/jensborch/debouncer4j/actions/workflows/maven.yml)
 
 [![Sonarcloud Status](https://sonarcloud.io/api/project_badges/measure?project=com.github.jensborch.debouncer4j%3Adebouncer4j&metric=alert_status)](https://sonarcloud.io/dashboard?id=com.github.jensborch.debouncer4j%3Adebouncer4j)
 
