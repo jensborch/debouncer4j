@@ -3,12 +3,17 @@ package com.github.jensborch.debouncer4j;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.AdditionalMatchers.leq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.lenient;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -30,36 +35,43 @@ class DebouncerTest {
 
     @BeforeEach
     void setUp() {
-        debouncer = new Debouncer("Test", t -> t + " result", 1000, scheduler);
+        debouncer = new Debouncer<>("Test", t -> t + " result", 100L, scheduler);
+    }
+
+    private void mockScheduler() {
+        when(scheduler.schedule(any(Callable.class), leq(100L), eq(TimeUnit.MILLISECONDS))).thenAnswer(
+                invocation -> {
+                    ScheduledFuture future = mock(ScheduledFuture.class);
+                    lenient().when(future.get()).thenReturn(invocation.getArgument(0, Callable.class).call());
+                    return future;
+                });
     }
 
     @Test
-    void testRun() throws Exception {
-        String result = debouncer.run("test");
-        verify(scheduler, times(1)).schedule(any(Callable.class), eq(1000L), eq(TimeUnit.MILLISECONDS));
-        assertEquals("test result", result);
+    void testCallImmediately() throws Exception {
+        Future<String> result = debouncer.run("test");
+        verify(scheduler, times(1)).schedule(any(Callable.class), eq(100L), eq(TimeUnit.MILLISECONDS));
+        assertEquals("test result", result.get());
+    }
+
+    @Test
+    void testCallImmediatelyTwice() throws Exception {
+        mockScheduler();
+        debouncer.run("test");
+        Future<String> result = debouncer.run("test");
+        verify(scheduler, times(2)).schedule(any(Callable.class), eq(100L), eq(TimeUnit.MILLISECONDS));
+        assertEquals("test result", result.get());
     }
 
     @Test
     void testRunDebouncedOnce() throws Exception {
         debouncer.run("test");
+        mockScheduler();
         debouncer.run("test");
         debouncer.run("test");
-        String result = debouncer.run("test");
-        verify(scheduler, times(1)).schedule(any(Callable.class), eq(1000L), eq(TimeUnit.MILLISECONDS));
-        assertEquals("test result", result);
-    }
-
-    @Test
-    void testRunDebounced() throws Exception {
-        when(scheduler.schedule(any(Callable.class), eq(1000L), eq(TimeUnit.MILLISECONDS))).thenAnswer(
-                invocation -> {
-                    invocation.getArgument(0, Callable.class).call();
-                    return null;
-                });
-        debouncer.run("test");
-        String result = debouncer.run("test");
-        verify(scheduler, times(2)).schedule(any(Callable.class), eq(1000L), eq(TimeUnit.MILLISECONDS));
+        Future<String> result = debouncer.run("test");
+        verify(scheduler, times(2)).schedule(any(Callable.class), leq(100L), eq(TimeUnit.MILLISECONDS));
+        assertEquals("test result", result.get());
     }
 
 }

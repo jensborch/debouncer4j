@@ -53,15 +53,18 @@ public @interface Debounce {
         public Object bebounce(final InvocationContext context) throws Exception {
             Debouncer debouncer = methods.computeIfAbsent(
                     context.getMethod(),
-                    method -> debouncer(context));
+                    method -> debouncer(context)
+            );
             return debouncer.run(context);
         }
 
         private Debouncer<Parameters, Object> debouncer(final InvocationContext context) {
-            return new Debouncer(context.getMethod().getName(),
+            return new Debouncer(
+                    context.getMethod().getName(),
                     parameters -> proceed(context),
                     context.getMethod().getAnnotation(Debounce.class).delay(),
-                    scheduler);
+                    scheduler
+            );
         }
 
         private Object proceed(final InvocationContext context) {
