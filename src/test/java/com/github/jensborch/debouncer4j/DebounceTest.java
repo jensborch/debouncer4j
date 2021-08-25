@@ -39,7 +39,7 @@ class DebounceTest {
     @Test
     void testSomeMethod() throws Exception {
         inteceptor.bebounce(context);
-        verify(context, times(3)).getMethod();
+        verify(context, times(4)).getMethod();
     }
 
     @Debounce(delay = 100)

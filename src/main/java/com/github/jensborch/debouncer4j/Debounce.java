@@ -11,6 +11,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 
 import javax.annotation.Priority;
@@ -20,6 +21,9 @@ import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InterceptorBinding;
 import javax.interceptor.InvocationContext;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * CDI interceptor for bebouncing method calls.
@@ -44,6 +48,8 @@ public @interface Debounce {
     @Debounce
     class DebounceInteceptor {
 
+        private static final Logger LOG = LoggerFactory.getLogger(Debounce.class);
+
         @Inject
         private ScheduledExecutorService scheduler;
 
@@ -51,11 +57,17 @@ public @interface Debounce {
 
         @AroundInvoke
         public Object bebounce(final InvocationContext context) throws Exception {
-            Debouncer debouncer = methods.computeIfAbsent(
-                    context.getMethod(),
-                    method -> debouncer(context)
-            );
-            return debouncer.run(context);
+            Class<?> returnType = context.getMethod().getReturnType();
+            if (Void.TYPE.equals(returnType) || Future.class.isAssignableFrom(returnType)) {
+                Debouncer debouncer = methods.computeIfAbsent(
+                        context.getMethod(),
+                        method -> debouncer(context)
+                );
+                return debouncer.run(context);
+            } else {
+                LOG.error("Return type must be void or a Future... will not debounce");
+                return context.proceed();
+            }
         }
 
         private Debouncer<Parameters, Object> debouncer(final InvocationContext context) {
